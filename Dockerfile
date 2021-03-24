@@ -8,6 +8,7 @@ COPY runner.sh /
 
 # prepare environment
 RUN apt update && apt install -y curl \
+    && rm -rf /var/lib/apt/lists/* \
     && groupadd -g $APP_GID acme \
     && useradd -m -u $APP_UID -g $APP_GID acme \
     && chmod 755 /entrypoint.py \
