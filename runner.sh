@@ -10,12 +10,25 @@ _log() {
     echo ${@:2} "[$(date '+%Y-%m-%d %H:%M:%S')] ACME RUNNER | ${1}"
 }
 
+_check_var() {
+    declare -a required=($@)
+    for i in "${required[@]}"
+    do
+        if [ -z "${!i}" ]; then echo "${i}"; return 1; fi
+    done
+}
+
+_exit() {
+    _log "Exit Code: ${1}"
+    exit ${1}
+}
+
 # check variable
-declare -a required=("ACME_HOME" "DEPLOY_HOOK" "LE_ACC_EMAIL" "CERT_DOMAIN" "CERT_DNS")
-for i in "${required[@]}"
-do
-    if [ -z "${!i}" ]; then echo "${i} is not set!!!"; exit 1; fi
-done
+no_var=$(_check_var "ACME_HOME")
+if [ ! -z "${no_var}" ]; then
+    _log "${no_var} is not set!"
+    _exit 1
+fi
 
 # debug message
 if [ true ]; then
@@ -47,26 +60,73 @@ if [ true ]; then
     _log ""
 fi
 
-# run acme --install if home not exists
-if [ ! -d "${ACME_HOME}" ]; then
-    _log "Initalizing ACME_HOME: ${ACME_HOME}..."
-    cd /acme.sh && ./acme.sh --install --nocron --home "${ACME_HOME}" --accountemail "${LE_ACC_EMAIL}"
+# "install" in arguments, trigger installation step
+if [[ " ${@} " =~ " install " ]]; then
+    no_var=$(_check_var "ACME_HOME" "LE_ACC_EMAIL")
+    if [ ! -z "${no_var}" ]; then
+        _log "${no_var} is not set! Failed to install acme.sh..."
+        _exit 1
+    fi
+
+    # run acme --install if home not exists
+    if [ ! -f "${ACME_HOME}/acme.sh" ]; then
+        _log "Initalizing ACME_HOME: ${ACME_HOME}"
+
+        cd /acme.sh && ./acme.sh --install --nocron --home "${ACME_HOME}" --accountemail "${LE_ACC_EMAIL}"
+    else
+        _log "ACME_HOME already present: ${ACME_HOME}, skip installation..."
+    fi
 fi
 
-# if domain not setup, issue and deploy cert for first time
-if [ ! -f "${ACME_HOME}/${CERT_DOMAIN}/${CERT_DOMAIN}.conf" ]; then
-    _log "Initalizing domain ${CERT_DOMAIN}"
-    cd ${ACME_HOME} && ./acme.sh --issue --home . -d "${CERT_DOMAIN}" --dns "${CERT_DNS}"
-    _log "Cert for domain ${CERT_DOMAIN} initalized, deploying..."
-    ./acme.sh --deploy --home . -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
+# "issue" in arguments, trigger issue cert step
+if [[ " ${@} " =~ " issue " ]]; then
+    no_var=$(_check_var "ACME_HOME" "CERT_DOMAIN" "DEPLOY_HOOK" "CERT_DNS")
+    if [ ! -z "${no_var}" ]; then
+        _log "${no_var} is not set! Failed to issue new cert..."
+        _exit 1
+    fi
+
+    # check ACME_HOME installation
+    if [ ! -f "${ACME_HOME}/acme.sh" ]; then
+        _log "ACME_HOME ${ACME_HOME} does not exist...Please run with \"install\" to install acme.sh."
+        _exit 1
+    fi
+
+    # if domain not setup, issue and deploy cert for first time
+    if [ ! -f "${ACME_HOME}/${CERT_DOMAIN}/${CERT_DOMAIN}.conf" ]; then
+        _log "Initalizing domain ${CERT_DOMAIN}..."
+
+        cd ${ACME_HOME} && ./acme.sh --issue --home . -d "${CERT_DOMAIN}" -d "*.${CERT_DOMAIN}" --dns "${CERT_DNS}"
+        _log "Cert for domain ${CERT_DOMAIN} initalized, deploying..."
+        ./acme.sh --deploy --home . -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
+    else
+        _log "${CERT_DOMAIN} already present: ${ACME_HOME}/${CERT_DOMAIN}/${CERT_DOMAIN}.conf, skip issue new cert..."
+    fi
 fi
 
-# renew cert
-cd ${ACME_HOME} && RESULT=$(./acme.sh --cron --home .) && echo "${RESULT}"
-# if cert renewed, deploy it
-if ! echo "${RESULT}" | grep -qF "Skipped ${CERT_DOMAIN}" ; then
-    _log "Cert for domain ${CERT_DOMAIN} renewed, deploying..."
-    ./acme.sh --deploy --home . -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
+# "renew" in arguments, trigger issue cert step
+if [[ " ${@} " =~ " renew " ]]; then
+    no_var=$(_check_var "ACME_HOME" "CERT_DOMAIN" "DEPLOY_HOOK")
+    if [ ! -z "${no_var}" ]; then
+        _log "${no_var} is not set! Failed to issue new cert..."
+        _exit 1
+    fi
+
+    # check ACME_HOME installation
+    if [ ! -f "${ACME_HOME}/acme.sh" ]; then
+        _log "ACME_HOME ${ACME_HOME} does not exist...Please run with \"install\" to install acme.sh."
+        _exit 1
+    fi
+
+    # renew cert
+    cd ${ACME_HOME} && RESULT=$(./acme.sh --cron --home .) && echo "${RESULT}"
+    # if cert renewed, deploy it
+    if ! echo "${RESULT}" | grep -qF "Skipped ${CERT_DOMAIN}" ; then
+        _log "${CERT_DOMAIN} renewed, deploying..."
+        ./acme.sh --deploy --home . -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
+    else
+        _log "${CERT_DOMAIN} no renew needed..."
+    fi
 fi
 
-_log "Completed..."
+_exit 0

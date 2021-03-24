@@ -19,7 +19,7 @@ docker run -td \
     -e SYNO_Hostname="<dsm_host>" \
     -e SYNO_Port="443" \
     -e SYNO_DID="<dsm_2fa_device_id>" \
-    -v <domain_config_folder>:/home/acme/acme.sh/<domain> \
+    -v <acme_home>:/home/acme/acme.sh \
     acme.sh
 `
 

@@ -18,3 +18,4 @@ RUN apt update && apt install -y curl \
 
 USER acme
 ENTRYPOINT ["/usr/bin/env", "python", "/entrypoint.py"]
+CMD ["install", "issue", "renew"]

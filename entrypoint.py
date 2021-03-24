@@ -6,7 +6,7 @@ import subprocess
 
 
 def runner():
-    subprocess.run(['/usr/bin/env', 'bash', '/runner.sh'])
+    subprocess.run(['/usr/bin/env', 'bash', '/runner.sh'] + sys.argv[1:])
 
 # setup jobs
 schedule.every().sunday.do(runner)
