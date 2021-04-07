@@ -125,7 +125,7 @@ if [[ " ${@} " =~ " renew " ]]; then
         _log "${CERT_DOMAIN} renewed, deploying..."
         ./acme.sh --deploy --home . -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
     else
-        _log "${CERT_DOMAIN} no renew needed..."
+        _log "${CERT_DOMAIN} no renewal needed..."
     fi
 fi
 
