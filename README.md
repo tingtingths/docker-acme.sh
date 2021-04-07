@@ -5,7 +5,7 @@ A Docker image to issue, renew, and deploy Let's Encrypt certificate with DNS-01
 
 ## Example
 Cloudflare DNS and Synology DSM deployment.
-`sh
+```sh
 docker run -td \
     -e CERT_DOMAIN="<domain>" \
     -e CERT_DNS="dns_cf" \
@@ -21,6 +21,10 @@ docker run -td \
     -e SYNO_DID="<dsm_2fa_device_id>" \
     -v <acme_home>:/home/acme/acme.sh \
     acme.sh
-`
+```
+
+## Limitations
+Only [dnsapi](https://github.com/acmesh-official/acme.sh/wiki/dnsapi) mode and [deployhooks](https://github.com/acmesh-official/acme.sh/wiki/deployhooks) are supported.
+
 
 Check [acme.sh](http://acme.sh/) for more info.
