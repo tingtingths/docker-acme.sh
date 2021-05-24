@@ -129,4 +129,21 @@ if [[ " ${@} " =~ " renew " ]]; then
     fi
 fi
 
+if [[ " ${@} " =~ " deploy " ]]; then
+    no_var=$(_check_var "ACME_HOME" "CERT_DOMAIN" "DEPLOY_HOOK")
+    if [ ! -z "${no_var}" ]; then
+        _log "${no_var} is not set! Failed to issue new cert..."
+        _exit 1
+    fi
+
+    # check ACME_HOME installation
+    if [ ! -f "${ACME_HOME}/acme.sh" ]; then
+        _log "ACME_HOME ${ACME_HOME} does not exist...Please run with \"install\" to install acme.sh."
+        _exit 1
+    fi
+
+    _log "Deploying ${CERT_DOMAIN}..."
+    cd ${ACME_HOME} && ./acme.sh --deploy --home . -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
+fi
+
 _exit 0
