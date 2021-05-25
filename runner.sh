@@ -89,6 +89,7 @@ if [[ " ${@} " =~ " install " ]]; then
     if [ ! -f "${ACME_HOME}/acme.sh" ]; then
         _log "Initalizing ACME_HOME: ${ACME_HOME}"
         /acme.sh/acme.sh --install --nocron --home "${ACME_HOME}" --accountemail "${LE_ACC_EMAIL}"
+        "${ACME_HOME}/acme.sh" --upgrade --home "${ACME_HOME}"
     else
         _log "ACME_HOME already present: ${ACME_HOME}, skip installation..."
     fi
