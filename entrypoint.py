@@ -14,7 +14,7 @@ def runner():
     last_run = datetime.now()
 
 # setup jobs
-schedule.every().week.do(runner)
+schedule.every().day.do(runner)
 # print all jobs
 [print(f'JOB - {str(job)}') for job in schedule.jobs]
 # run now
