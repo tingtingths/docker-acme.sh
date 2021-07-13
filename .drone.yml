@@ -9,7 +9,7 @@ platform:
 
 steps:
 - name: publish
-  image: plugins/docker:18
+  image: plugins/docker
   settings:
     auto_tag: true
     auto_tag_suffix: linux-amd64
@@ -65,7 +65,7 @@ platform:
 
 steps:
 - name: publish
-  image: plugins/docker:18
+  image: plugins/docker
   settings:
     auto_tag: true
     auto_tag_suffix: linux-amd64
