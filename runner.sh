@@ -37,7 +37,7 @@ deploy() {
     fi
 
     _log "Deploying ${CERT_DOMAIN}..."
-    "${ACME_HOME}/acme.sh" --deploy --home "${ACME_HOME}" -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
+    "${ACME_HOME}/acme.sh" --insecure --deploy --home "${ACME_HOME}" -d "${CERT_DOMAIN}" --deploy-hook ${DEPLOY_HOOK}
 }
 
 # check variable
