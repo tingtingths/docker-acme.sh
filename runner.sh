@@ -135,7 +135,7 @@ if [[ " ${@} " =~ " renew " ]]; then
     fi
 
     # renew cert
-    RESULT=$("${ACME_HOME}/acme.sh" --cron --home "${ACME_HOME}") && echo "${RESULT}"
+    RESULT=$("${ACME_HOME}/acme.sh" -r --home "${ACME_HOME}" -d "${CERT_DOMAIN}") && echo "${RESULT}"
     # if cert renewed, deploy it
     if ! echo "${RESULT}" | grep -qF "Skipped ${CERT_DOMAIN}" ; then
         _log "${CERT_DOMAIN} renewed, deploying..."
