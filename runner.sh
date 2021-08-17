@@ -47,35 +47,15 @@ if [ ! -z "${no_var}" ]; then
     _exit 1
 fi
 
-# debug message
-if [ true ]; then
-    _log "ACME RUNNER CONFIG ==========================================="
-    _log "ACME_HOME: ${ACME_HOME}"
-    _log "LE_ACC_EMAIL: ${LE_ACC_EMAIL}"
-    _log "CERT_DOMAIN: ${CERT_DOMAIN}"
-    _log "CERT_DNS: ${CERT_DNS}"
-    _log "DEPLOY_HOOK: ${DEPLOY_HOOK}"
-    if [ "dns_cf" = "${CERT_DNS}" ]; then
-        _log "Cloudflare DNS:"
-        _log "\tCF_Key: ${CF_Key}" -e
-        _log "\tCF_Email: ${CF_Email}" -e
-        _log "\tCF_Token: ${CF_Token}" -e
-        _log "\tCF_Account_ID: ${CF_Account_ID}" -e
-        _log "\tCF_Zone_ID: ${CF_Zone_ID}" -e
-    fi
-    if [ "synology_dsm" = "${DEPLOY_HOOK}" ]; then
-        _log "Deploy Hook synology_dsm:"
-        _log "\tSYNO_Username: ${SYNO_Username}" -e
-        _log "\tSYNO_Password: ${SYNO_Password}" -e
-        _log "\tSYNO_Scheme: ${SYNO_Scheme}" -e
-        _log "\tSYNO_Hostname: ${SYNO_Hostname}" -e
-        _log "\tSYNO_Port: ${SYNO_Port}" -e
-        _log "\tSYNO_DID: ${SYNO_DID}" -e
-    fi
-    _log "=========================================== ACME RUNNER CONFIG"
-    _log ""
-    _log ""
-fi
+_log "ACME RUNNER CONFIG ==========================================="
+_log "ACME_HOME: ${ACME_HOME}"
+_log "LE_ACC_EMAIL: ${LE_ACC_EMAIL}"
+_log "CERT_DOMAIN: ${CERT_DOMAIN}"
+_log "CERT_DNS: ${CERT_DNS}"
+_log "DEPLOY_HOOK: ${DEPLOY_HOOK}"
+_log "=========================================== ACME RUNNER CONFIG"
+_log ""
+_log ""
 
 # "install" in arguments, trigger installation step
 if [[ " ${@} " =~ " install " ]]; then
