@@ -14,7 +14,7 @@ steps:
     auto_tag: true
     auto_tag_suffix: linux-amd64
     dockerfile: Dockerfile
-    repo: registry.itdog.me/acme-sh
+    repo: registry.itdog.me/ting/docker-acme.sh
     username:
       from_secret: docker_username
     password:
@@ -40,7 +40,7 @@ steps:
 ##    auto_tag: true
 ##    auto_tag_suffix: linux-amd64
 ##    dockerfile: Dockerfile
-##    repo: registry.itdog.me/acme-sh
+##    repo: registry.itdog.me/ting/docker-acme.sh
 ##    username:
 ##      from_secret: docker_username
 ##    password:
@@ -70,7 +70,7 @@ steps:
     auto_tag: true
     auto_tag_suffix: linux-amd64
     dockerfile: Dockerfile
-    repo: registry.itdog.me/acme-sh
+    repo: registry.itdog.me/ting/docker-acme.sh
     username:
       from_secret: docker_username
     password:
