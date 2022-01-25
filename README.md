@@ -23,6 +23,11 @@ docker run -td \
     acme.sh
 ```
 
+## Upgrade acme.sh
+```sh
+docker exec -t -u acme <container> /runner.sh upgrade
+```
+
 ## Limitations
 Only [dnsapi](https://github.com/acmesh-official/acme.sh/wiki/dnsapi) mode and [deployhooks](https://github.com/acmesh-official/acme.sh/wiki/deployhooks) are supported.
 

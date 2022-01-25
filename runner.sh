@@ -75,6 +75,26 @@ if [[ " ${@} " =~ " install " ]]; then
     fi
 fi
 
+# "upgrade" in arguments, trigger installation step
+if [[ " ${@} " =~ " upgrade " ]]; then
+    no_var=$(_check_var "ACME_HOME")
+    if [ ! -z "${no_var}" ]; then
+        _log "${no_var} is not set! Failed to install acme.sh..."
+        _exit 1
+    fi
+
+    # check ACME_HOME installation
+    if [ ! -f "${ACME_HOME}/acme.sh" ]; then
+        _log "ACME_HOME ${ACME_HOME} does not exist...Please run with \"install\" to install acme.sh."
+        _exit 1
+    fi
+
+    _log "acme.sh version..."
+    "${ACME_HOME}/acme.sh" --home "${ACME_HOME}" --version
+    _log "Upgrading acme.sh..."
+    "${ACME_HOME}/acme.sh" --home "${ACME_HOME}" --upgrade
+fi
+
 # "issue" in arguments, trigger issue cert step
 if [[ " ${@} " =~ " issue " ]]; then
     no_var=$(_check_var "ACME_HOME" "CERT_DOMAIN" "CERT_DNS")
