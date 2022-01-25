@@ -1,111 +1,160 @@
+kind: pipeline
+type: docker
+name: build-arm64
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+  - name: build-by-push
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      registry: registry.itdog.me
+      repo: registry.itdog.me/ting/docker-acme.sh
+      tags:
+        - ${DRONE_BRANCH}-${DRONE_STAGE_ARCH}
+    when:
+      event:
+      - push
+
+  - name: build-by-tag
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      registry: registry.itdog.me
+      repo: registry.itdog.me/ting/docker-acme.sh
+      tags:
+        - ${DRONE_TAG}-${DRONE_STAGE_ARCH}
+    when:
+      event:
+      - tag
+
+trigger:
+  event:
+  - push
+  - tag
+
 ---
 kind: pipeline
 type: docker
-name: linux-amd64
+name: build-amd64
 
 platform:
+  os: linux
   arch: amd64
-  os: linux
 
 steps:
-- name: publish
-  image: plugins/docker
-  settings:
-    auto_tag: true
-    auto_tag_suffix: linux-amd64
-    dockerfile: Dockerfile
-    repo: registry.itdog.me/acme-sh
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-  when:
-    event:
-    - push
+  - name: build-by-push
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      registry: registry.itdog.me
+      repo: registry.itdog.me/ting/docker-acme.sh
+      tags:
+        - ${DRONE_BRANCH}-${DRONE_STAGE_ARCH}
+    when:
+      event:
+      - push
+
+  - name: build-by-tag
+    image: plugins/docker
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      registry: registry.itdog.me
+      repo: registry.itdog.me/ting/docker-acme.sh
+      tags:
+        - ${DRONE_TAG}-${DRONE_STAGE_ARCH}
+    when:
+      event:
+      - tag
+
+trigger:
+  event:
+  - push
+  - tag
+
+---
+kind: pipeline
+type: docker
+name: package-with-manifest
+
+steps:
+  - name: manifest-by-tag
+    image: plugins/manifest
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      target: registry.itdog.me/ting/docker-acme.sh:${DRONE_TAG:=none}
+      template: registry.itdog.me/ting/docker-acme.sh:${DRONE_TAG:=none}-ARCH
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    when:
+      event:
+        - tag
+
+  - name: manifest-by-tag-latest
+    image: plugins/manifest
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      target: registry.itdog.me/ting/docker-acme.sh:latest
+      template: registry.itdog.me/ting/docker-acme.sh:${DRONE_TAG:=none}-ARCH
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    when:
+      event:
+        - tag
+
+  - name: manifest-by-push
+    image: plugins/manifest
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      target: registry.itdog.me/ting/docker-acme.sh:${DRONE_BRANCH:=none}
+      template: registry.itdog.me/ting/docker-acme.sh:${DRONE_BRANCH:=none}-ARCH
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    when:
+      event:
+        - push
+
+  - name: telegram-notification
+    image: appleboy/drone-telegram
+    settings:
+      token:
+        from_secret: telegram_notification_bot_token
+      to:
+        from_secret: telegram_notification_receiver
+      format: markdown
+
+trigger:
+  event:
     - tag
-
-##---
-##kind: pipeline
-##type: docker
-##name: linux-arm64
-##
-##platform:
-##  arch: arm64
-##  os: linux
-##
-##steps:
-##- name: publish
-##  image: plugins/docker:18
-##  settings:
-##    auto_tag: true
-##    auto_tag_suffix: linux-amd64
-##    dockerfile: Dockerfile
-##    repo: registry.itdog.me/acme-sh
-##    username:
-##      from_secret: docker_username
-##    password:
-##      from_secret: docker_password
-##
-##trigger:
-##  event:
-##  - push
-##  - tag
-#
-#depends_on:
-#- linux-amd64
-#
----
-kind: pipeline
-type: docker
-name: linux-arm
-
-platform:
-  arch: arm
-  os: linux
-
-steps:
-- name: publish
-  image: plugins/docker
-  settings:
-    auto_tag: true
-    auto_tag_suffix: linux-amd64
-    dockerfile: Dockerfile
-    repo: registry.itdog.me/acme-sh
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-
-trigger:
-  event:
-  - push
-  - tag
+    - push
 
 depends_on:
-- linux-amd64
-
----
-kind: pipeline
-type: docker
-name: manifest
-
-steps:
-- name: publish
-  image: plugins/manifest:1.2
-  settings:
-    auto_tag: true
-    ignore_missing: true
-    spec: ci/manifest.tmpl
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-
-trigger:
-  event:
-  - push
-  - tag
-
-depends_on:
-#- linux-arm64
-- linux-arm
+  - build-amd64
+  - build-arm64
